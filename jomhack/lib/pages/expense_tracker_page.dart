@@ -8,197 +8,216 @@ class ExpenseTrackerPage extends StatefulWidget {
   State<ExpenseTrackerPage> createState() => _ExpenseTrackerPageState();
 }
 
-class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  String _selectedPeriod = 'This Month';
-  String _selectedCategory = 'All';
+class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
+  int _currentCardIndex = 0;
+  final PageController _pageController = PageController();
 
-  final List<String> _periods = ['Today', 'This Week', 'This Month', 'This Year'];
-  final List<String> _categories = [
-    'All',
-    'Food & Drinks',
-    'Transportation',
-    'Shopping',
-    'Bills',
-    'Entertainment',
-    'Groceries',
-    'Health',
-    'Others'
+  // Sample card data
+  final List<BankCard> _cards = [
+    // First card is Maybank
+    BankCard(
+      name: 'Renee Nyong',
+      bankName: 'Maybank',
+      accountNumber: 'XXX5787',
+      balance: 28901,
+      income: 50000,
+      expense: 20100,
+      color: const Color(0xFF1E2B47), // Maybank dark blue
+      transactions: [
+        Transaction(
+          title: 'Salary',
+          amount: 50000,
+          date: DateTime(2023, 6, 5, 9, 00),
+          icon: Icons.account_balance_wallet,
+          type: TransactionType.income,
+        ),
+        Transaction(
+          title: 'Housing',
+          amount: 1200,
+          date: DateTime(2023, 6, 11, 10, 11),
+          icon: Icons.home,
+          type: TransactionType.expense,
+        ),
+        Transaction(
+          title: 'Insurance',
+          amount: 450,
+          date: DateTime(2023, 6, 6, 21, 30),
+          icon: Icons.security,
+          type: TransactionType.expense,
+        ),
+        Transaction(
+          title: 'Investment',
+          amount: 18000,
+          date: DateTime(2023, 6, 2, 0, 4),
+          icon: Icons.attach_money,
+          type: TransactionType.expense,
+        ),
+      ],
+    ),
+    // Second card is Touch n Go
+    BankCard(
+      name: 'Renee Nyong',
+      bankName: 'Touch n Go eWallet',
+      accountNumber: 'XXX8823',
+      balance: 450.60,
+      income: 500,
+      expense: 49.40,
+      color: const Color(0xFF1E88E5), // TnG blue
+      transactions: [
+        Transaction(
+          title: 'Tealive',
+          amount: 15.90,
+          date: DateTime(2023, 6, 11, 16, 30),
+          icon: Icons.local_drink,
+          type: TransactionType.expense,
+        ),
+        Transaction(
+          title: 'Parking KLCC',
+          amount: 12.00,
+          date: DateTime(2023, 6, 11, 14, 00),
+          icon: Icons.local_parking,
+          type: TransactionType.expense,
+        ),
+        Transaction(
+          title: 'Top Up',
+          amount: 500,
+          date: DateTime(2023, 6, 10, 09, 30),
+          icon: Icons.account_balance_wallet,
+          type: TransactionType.income,
+        ),
+        Transaction(
+          title: 'Toll LDP',
+          amount: 21.50,
+          date: DateTime(2023, 6, 9, 18, 45),
+          icon: Icons.toll,
+          type: TransactionType.expense,
+        ),
+      ],
+    ),
   ];
-
-  final List<Expense> _expenses = [
-    Expense(
-      title: 'Tesco Groceries',
-      amount: 285.50,
-      date: DateTime.now().subtract(const Duration(days: 1)),
-      source: TransactionSource.cimbDebit2664,
-      category: 'Groceries',
-      icon: Icons.shopping_cart,
-      color: Colors.green,
-    ),
-    Expense(
-      title: 'Netflix Subscription',
-      amount: 54.90,
-      date: DateTime.now().subtract(const Duration(days: 2)),
-      source: TransactionSource.cimbCredit1234,
-      category: 'Entertainment',
-      icon: Icons.movie,
-      color: Colors.red,
-    ),
-    Expense(
-      title: 'Grab Ride',
-      amount: 25.80,
-      date: DateTime.now().subtract(const Duration(days: 2)),
-      source: TransactionSource.grabPay,
-      category: 'Transportation',
-      icon: Icons.directions_car,
-      color: Colors.blue,
-    ),
-    // Add more sample expenses as needed
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  double get totalSpending {
-    return _expenses.fold(0, (sum, expense) => sum + expense.amount);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              expandedHeight: 200.0,
-              floating: false,
-              pinned: true,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  alignment: Alignment.bottomLeft,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                      colors: [
-                        Theme.of(context).primaryColor,
-                        Theme.of(context).primaryColor.withOpacity(0.7),
-                      ],
-                    ),
+      backgroundColor: const Color(0xFFF7F9FC),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Expenses',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E1E1E),
+              ),
+            ),
+            Text(
+              'June 2024',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF666666),
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF1E1E1E)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 180,
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentCardIndex = index;
+                });
+              },
+              children: [
+                _buildTotalCard(),
+                ..._cards.map((card) => _buildBankCard(card)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              _cards.length + 1,
+              (index) => _buildDotIndicator(index),
+            ),
+          ),
+          _buildIncomeExpenseRow(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Recent Transactions',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E1E1E),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Total Spending',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        'RM ${totalSpending.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
+                  child: Text(
+                    '01 Jun - 11 Jun',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
-              ),
-              bottom: TabBar(
-                controller: _tabController,
-                tabs: const [
-                  Tab(text: 'Transactions'),
-                  Tab(text: 'Analytics'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    offset: const Offset(0, 4),
+                    blurRadius: 12,
+                  ),
                 ],
               ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildTransactionsTab(),
-            _buildAnalyticsTab(),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddExpenseDialog(),
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget _buildTransactionsTab() {
-    return Column(
-      children: [
-        _buildFilters(),
-        Expanded(
-          child: ListView.builder(
-            itemCount: _expenses.length,
-            itemBuilder: (context, index) {
-              return _buildExpenseCard(_expenses[index]);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFilters() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: DropdownButton<String>(
-              value: _selectedPeriod,
-              isExpanded: true,
-              items: _periods.map((String period) {
-                return DropdownMenuItem<String>(
-                  value: period,
-                  child: Text(period),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedPeriod = newValue!;
-                });
-              },
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: DropdownButton<String>(
-              value: _selectedCategory,
-              isExpanded: true,
-              items: _categories.map((String category) {
-                return DropdownMenuItem<String>(
-                  value: category,
-                  child: Text(category),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedCategory = newValue!;
-                });
-              },
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: _currentCardIndex == _cards.length
+                    ? _getAllTransactions().length
+                    : _cards[_currentCardIndex].transactions.length,
+                itemBuilder: (context, index) {
+                  final transactions = _currentCardIndex == _cards.length
+                      ? _getAllTransactions()
+                      : _cards[_currentCardIndex].transactions;
+                  return _buildTransactionItem(transactions[index]);
+                },
+              ),
             ),
           ),
         ],
@@ -206,170 +225,371 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> with SingleTick
     );
   }
 
-  Widget _buildExpenseCard(Expense expense) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: expense.color.withOpacity(0.2),
-          child: Icon(expense.icon, color: expense.color),
+  Widget _buildBankCard(BankCard card) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            card.color,
+            card.color.withOpacity(0.8),
+          ],
         ),
-        title: Text(expense.title),
-        subtitle: Column(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: card.color.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      card.bankName,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'RM ${card.balance.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.remove_red_eye,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              'Account ${card.accountNumber}',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDotIndicator(int index) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _currentCardIndex == index 
+            ? const Color(0xFF2196F3)
+            : Colors.grey.withOpacity(0.3),
+      ),
+    );
+  }
+
+  Widget _buildTotalCard() {
+    double totalBalance = _cards.fold(0, (sum, card) => sum + card.balance);
+    double totalIncome = _cards.fold(0, (sum, card) => sum + card.income);
+    double totalExpense = _cards.fold(0, (sum, card) => sum + card.expense);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color.fromARGB(255, 0, 0, 0), Color.fromARGB(255, 0, 0, 0)], // Modern blue gradient
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2196F3).withOpacity(0.3),
+            offset: const Offset(0, 8),
+            blurRadius: 15,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              DateFormat('MMM dd, yyyy').format(expense.date),
-              style: TextStyle(color: Colors.grey[600]),
+              'RM ${totalBalance.toStringAsFixed(2)}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
             ),
-            Text(
-              _getSourceName(expense.source),
-              style: const TextStyle(fontSize: 12),
+            const Text(
+              'Total Balance',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Income: RM ${totalIncome.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Expense: RM ${totalExpense.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.copy,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        trailing: Text(
-          'RM ${expense.amount.toStringAsFixed(2)}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildAnalyticsTab() {
-    return const Center(
-      child: Text('Analytics Coming Soon!'),
-    );
-  }
+  Widget _buildIncomeExpenseRow() {
+    // Get the current card or total values
+    double income = 0;
+    double expense = 0;
 
-  void _showAddExpenseDialog() {
-    // Implement add expense dialog
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return AddExpenseForm();
-      },
-    );
-  }
-
-  String _getSourceName(TransactionSource source) {
-    switch (source) {
-      case TransactionSource.cimbDebit2664:
-        return 'CIMB Debit *2664';
-      case TransactionSource.cimbCredit1234:
-        return 'CIMB Credit *1234';
-      case TransactionSource.grabPay:
-        return 'GrabPay';
-      case TransactionSource.tngEwallet:
-        return 'TNG eWallet';
-      default:
-        return 'Unknown Source';
+    if (_currentCardIndex == 0) {
+      // For total card
+      for (var card in _cards) {
+        income += card.income;
+        expense += card.expense;
+      }
+    } else {
+      // For individual cards
+      final card = _cards[_currentCardIndex - 1];
+      income = card.income;
+      expense = card.expense;
     }
-  }
-}
 
-// Add Expense Form Widget
-class AddExpenseForm extends StatefulWidget {
-  @override
-  _AddExpenseFormState createState() => _AddExpenseFormState();
-}
-
-class _AddExpenseFormState extends State<AddExpenseForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, 4),
+            blurRadius: 12,
+          ),
+        ],
       ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Expense Title',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
-                }
-                return null;
-              },
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_upward,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Income',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'RM ${income.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _amountController,
-              decoration: const InputDecoration(
-                labelText: 'Amount (RM)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an amount';
-                }
-                if (double.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
+          ),
+          Container(
+            width: 1,
+            height: 50,
+            color: Colors.grey.withOpacity(0.2),
+          ),
+          Expanded(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_downward,
+                    color: Colors.red,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Expense',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'RM ${expense.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  // Add expense logic here
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Add Expense'),
-            ),
-            const SizedBox(height: 16),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(Transaction transaction) {
+    final bool isExpense = transaction.type == TransactionType.expense;
+    final String sign = isExpense ? '-' : '+';
+    final Color amountColor = isExpense ? Colors.red : Colors.green;
+
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(transaction.icon),
+      ),
+      title: Text(transaction.title),
+      subtitle: Text(
+        DateFormat('dd MMM yyyy, HH:mm').format(transaction.date),
+      ),
+      trailing: Text(
+        '$sign RM ${transaction.amount.toStringAsFixed(2)}',
+        style: TextStyle(
+          color: amountColor,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
+
+  List<Transaction> _getAllTransactions() {
+    List<Transaction> allTransactions = [];
+    for (var card in _cards) {
+      allTransactions.addAll(card.transactions);
+    }
+    allTransactions.sort((a, b) => b.date.compareTo(a.date));
+    return allTransactions;
+  }
 }
 
-// Enums and Classes
-enum TransactionSource {
-  cimbDebit2664,
-  cimbCredit1234,
-  grabPay,
-  tngEwallet,
+class BankCard {
+  final String name;
+  final String bankName;
+  final String accountNumber;
+  final double balance;
+  final double income;
+  final double expense;
+  final Color color;
+  final List<Transaction> transactions;
+
+  BankCard({
+    required this.name,
+    required this.bankName,
+    required this.accountNumber,
+    required this.balance,
+    required this.income,
+    required this.expense,
+    required this.color,
+    required this.transactions,
+  });
 }
 
-class Expense {
+class Transaction {
   final String title;
   final double amount;
   final DateTime date;
-  final TransactionSource source;
-  final String category;
   final IconData icon;
-  final Color color;
+  final TransactionType type;
 
-  const Expense({
+  Transaction({
     required this.title,
     required this.amount,
     required this.date,
-    required this.source,
-    required this.category,
     required this.icon,
-    required this.color,
+    required this.type,
   });
-} 
+}
+
+enum TransactionType { income, expense } 

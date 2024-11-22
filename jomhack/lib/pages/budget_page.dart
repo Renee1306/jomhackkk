@@ -45,21 +45,41 @@ class _BudgetPageState extends State<BudgetPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FC), // Light background color
       appBar: AppBar(
-        title: const Text('Smart Budget'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showAddBudgetDialog(),
-          ),
-        ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Smart Budget',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E1E1E),
+              ),
+            ),
+            Text(
+              'June 2024',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF666666),
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF1E1E1E)),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             _buildBudgetSummary(),
-            _buildBudgetList(),
-            _buildForecastCard(),
+            _buildSpendingChart(),
+            _buildBudgetCategories(),
           ],
         ),
       ),
@@ -67,74 +87,86 @@ class _BudgetPageState extends State<BudgetPage> {
   }
 
   Widget _buildBudgetSummary() {
-    double totalBudget = _budgets.fold(0, (sum, item) => sum + item.budgetAmount);
-    double totalSpent = _budgets.fold(0, (sum, item) => sum + item.spentAmount);
-    double remainingBudget = totalBudget - totalSpent;
-
-    return Card(
+    return Container(
       margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text(
-              'Monthly Budget Overview',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildSummaryItem(
-                  'Total Budget',
-                  totalBudget,
-                  Colors.blue,
-                ),
-                _buildSummaryItem(
-                  'Spent',
-                  totalSpent,
-                  Colors.red,
-                ),
-                _buildSummaryItem(
-                  'Remaining',
-                  remainingBudget,
-                  Colors.green,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: totalSpent / totalBudget,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                totalSpent / totalBudget > 0.9 ? Colors.red : Colors.green,
-              ),
-            ),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1A1A1A),  // Dark background start
+            Color(0xFF2D2D2D),  // Dark background end
           ],
         ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            offset: const Offset(0, 4),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Total Budget',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'RM 2,000.00',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildBudgetStatusItem('Spent', 'RM 1,560.00', Colors.redAccent),
+              _buildBudgetStatusItem('Remaining', 'RM 440.00', const Color(0xFF4CAF50)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: LinearProgressIndicator(
+              value: 0.78,
+              backgroundColor: Colors.white.withOpacity(0.1),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              minHeight: 8,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSummaryItem(String title, double amount, Color color) {
+  Widget _buildBudgetStatusItem(String title, String amount, Color accentColor) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: TextStyle(
-            color: Colors.grey[600],
+          style: const TextStyle(
+            color: Colors.white70,
             fontSize: 14,
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          'RM ${amount.toStringAsFixed(2)}',
+          amount,
           style: TextStyle(
-            color: color,
-            fontSize: 16,
+            color: accentColor,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -142,146 +174,156 @@ class _BudgetPageState extends State<BudgetPage> {
     );
   }
 
-  Widget _buildBudgetList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _budgets.length,
-      itemBuilder: (context, index) {
-        return _buildBudgetCard(_budgets[index]);
-      },
+  Widget _buildSpendingChart() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, 4),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Spending Distribution',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E1E1E),
+            ),
+          ),
+          const SizedBox(height: 24),
+          AspectRatio(
+            aspectRatio: 1.3,
+            child: PieChart(
+              PieChartData(
+                sections: _buildPieChartSections(),
+                sectionsSpace: 0,
+                centerSpaceRadius: 40,
+                startDegreeOffset: 270,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildBudgetCard(BudgetCategory budget) {
-    double percentage = budget.spentAmount / budget.budgetAmount;
-    bool isOverBudget = percentage > 0.9;
+  List<PieChartSectionData> _buildPieChartSections() {
+    double totalSpent = _budgets.fold(0, (sum, item) => sum + item.spentAmount);
+    
+    return _budgets.map((budget) {
+      double percentage = (budget.spentAmount / totalSpent) * 100;
+      return PieChartSectionData(
+        value: budget.spentAmount,
+        title: '${percentage.toStringAsFixed(1)}%',
+        radius: 100,
+        titleStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        color: budget.color,
+        showTitle: true,
+      );
+    }).toList();
+  }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
+  Widget _buildBudgetCategories() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, 4),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: _budgets.length,
+        itemBuilder: (context, index) {
+          final budget = _budgets[index];
+          final progress = budget.spentAmount / budget.budgetAmount;
+          
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: index != _budgets.length - 1
+                  ? Border(bottom: BorderSide(color: Colors.grey.withOpacity(0.1)))
+                  : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(budget.icon, color: budget.color),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        budget.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: budget.color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      Text(
-                        'RM ${budget.spentAmount.toStringAsFixed(2)} / RM ${budget.budgetAmount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                        ),
+                      child: Icon(budget.icon, color: budget.color),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            budget.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'RM ${budget.spentAmount} / RM ${budget.budgetAmount}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Text(
+                      '${(progress * 100).toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        color: budget.color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${(percentage * 100).toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    color: isOverBudget ? Colors.red : Colors.green,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(budget.color),
+                    minHeight: 6,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: percentage,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                isOverBudget ? Colors.red : budget.color,
-              ),
-            ),
-            if (isOverBudget)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Warning: Near or over budget!',
-                  style: TextStyle(
-                    color: Colors.red[700],
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildForecastCard() {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Spending Forecast',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Add your forecast chart here
-            const Text(
-              'Based on your current spending pattern:',
-              style: TextStyle(
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildForecastItem(
-              'Groceries',
-              'Likely to exceed by RM 50',
-              Icons.warning,
-              Colors.orange,
-            ),
-            _buildForecastItem(
-              'Entertainment',
-              'On track to meet budget',
-              Icons.check_circle,
-              Colors.green,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildForecastItem(
-    String category,
-    String message,
-    IconData icon,
-    Color color,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 8),
-          Text(
-            category,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 8),
-          Text(message),
-        ],
+          );
+        },
       ),
     );
   }
