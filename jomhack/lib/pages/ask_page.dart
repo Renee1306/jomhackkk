@@ -12,6 +12,13 @@ class _AskPageState extends State<AskPage> {
   final List<ChatMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();
 
+  // Add preset questions
+  final List<String> _presetQuestions = [
+    "What if I reduce my daily spending by RM10?",
+    "How will investing RM500 monthly affect my retirement savings?",
+    "Can I afford to buy a property in 5 years?",
+  ];
+
   @override
   void dispose() {
     _controller.dispose();
@@ -34,6 +41,7 @@ class _AskPageState extends State<AskPage> {
 
   void _simulateResponse(String question) {
     Future.delayed(const Duration(seconds: 1), () {
+      // For saving money scenarios
       if (question.toLowerCase().contains('save money')) {
         setState(() {
           _messages.add(ChatMessage(
@@ -41,13 +49,82 @@ class _AskPageState extends State<AskPage> {
             isUser: false,
           ));
           _messages.add(ChatMessage(
-            text: "Potential savings\nmonthly: \RM350\nyearly: \RM2223",
+            text: "Potential savings\nmonthly: RM350\nyearly: RM2223",
             isUser: false,
             isHighlighted: true,
           ));
         });
-        _scrollToBottom();
       }
+      // For investment scenarios
+      else if (question.toLowerCase().contains('investing rm500') || 
+               question.toLowerCase().contains('invest 500')) {
+        setState(() {
+          _messages.add(ChatMessage(
+            text: "Based on your financial twin simulation:",
+            isUser: false,
+          ));
+          _messages.add(ChatMessage(
+            text: "If you invest RM500 monthly with an average return of 6% p.a.:\n\n" +
+                 "In 10 years: RM78,227\n" +
+                 "In 20 years: RM206,932\n" +
+                 "In 30 years: RM474,349",
+            isUser: false,
+            isHighlighted: true,
+          ));
+        });
+      }
+      // For property purchase scenarios
+      else if (question.toLowerCase().contains('property') || 
+               question.toLowerCase().contains('house')) {
+        setState(() {
+          _messages.add(ChatMessage(
+            text: "Based on your current financial health:",
+            isUser: false,
+          ));
+          _messages.add(ChatMessage(
+            text: "Property Purchase Feasibility in 5 years:\n\n" +
+                 "✓ Down payment savings: RM48,000\n" +
+                 "✓ Estimated loan eligibility: RM450,000\n" +
+                 "✗ Debt Service Ratio: 75% (Should be below 70%)\n\n" +
+                 "Recommendation: Reduce current debts by RM15,000 to improve eligibility",
+            isUser: false,
+            isHighlighted: true,
+          ));
+        });
+      }
+      // For daily spending reduction
+      else if (question.toLowerCase().contains('reduce') && 
+               question.toLowerCase().contains('daily')) {
+        setState(() {
+          _messages.add(ChatMessage(
+            text: "Impact of reducing RM10 daily spending:",
+            isUser: false,
+          ));
+          _messages.add(ChatMessage(
+            text: "Monthly savings: RM300\n" +
+                 "Yearly savings: RM3,650\n\n" +
+                 "If invested at 6% p.a.:\n" +
+                 "5-year growth: RM21,450\n" +
+                 "10-year growth: RM49,890",
+            isUser: false,
+            isHighlighted: true,
+          ));
+        });
+      }
+      // Default response for other questions
+      else {
+        setState(() {
+          _messages.add(ChatMessage(
+            text: "I can help you with financial simulations like:\n\n" +
+                 "• What if I reduce my daily spending by RM10?\n" +
+                 "• How will investing RM500 monthly affect my retirement savings?\n" +
+                 "• Can I afford to buy a property in 5 years?\n\n" +
+                 "Just ask any of these questions!",
+            isUser: false,
+          ));
+        });
+      }
+      _scrollToBottom();
     });
   }
 
@@ -95,6 +172,54 @@ class _AskPageState extends State<AskPage> {
       ),
       body: Column(
         children: [
+          // Add preset questions section
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: _presetQuestions.map((question) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _messages.add(ChatMessage(
+                            text: question,
+                            isUser: true,
+                          ));
+                          _simulateResponse(question);
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF2E3192),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(
+                            color: Color(0xFFE0E0E0),
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        question,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,

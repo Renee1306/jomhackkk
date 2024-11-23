@@ -45,7 +45,7 @@ class _BudgetPageState extends State<BudgetPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC), // Light background color
+      backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -82,6 +82,167 @@ class _BudgetPageState extends State<BudgetPage> {
             _buildBudgetCategories(),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showAIInsights,
+        icon: const Icon(Icons.auto_awesome),
+        label: const Text('AI Insights'),
+        backgroundColor: const Color(0xFF6B4EFF),
+      ),
+    );
+  }
+
+  void _showAIInsights() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF6B4EFF),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Title
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text(
+                    'AI Financial Insights',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                // AI Insights Section
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInsightCard(
+                        icon: Icons.warning_amber_rounded,
+                        title: 'Budget Alert',
+                        description: 'You\'ve used 96% of your dining budget. Consider home cooking for the remaining days.',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInsightCard(
+                        icon: Icons.trending_down,
+                        title: 'Savings Opportunity',
+                        description: 'Entertainment spending is 50% below average. Consider moving RM150 to savings.',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInsightCard(
+                        icon: Icons.auto_graph,
+                        title: 'Goal Progress',
+                        description: 'You\'re on track for your RM10,000 savings goal by December 2024!',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInsightCard(
+                        icon: Icons.shopping_cart,
+                        title: 'Shopping Pattern',
+                        description: 'Most shopping occurs on weekends. Setting a weekend budget might help control spending.',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInsightCard(
+                        icon: Icons.account_balance_wallet,
+                        title: 'Cash Flow Insight',
+                        description: 'Your highest expenses are in the first week of each month. Consider spreading bills throughout the month.',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInsightCard(
+                        icon: Icons.savings,
+                        title: 'Investment Suggestion',
+                        description: 'Based on your savings pattern, you could invest RM500 monthly in low-risk funds.',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInsightCard({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pages/expense_tracker_page.dart';
 import 'pages/budget_page.dart';
-import 'pages/wallet_page.dart';
+import 'pages/investment.dart';
 import 'pages/settings_page.dart';
 import 'pages/onboarding_page.dart';
 import 'pages/ask_page.dart';
@@ -36,11 +36,11 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _selectedIndex = 0;
 
-  // Updated list of pages to include AskPage
+  // Updated list of pages to include InvestmentPage instead of WalletPage
   final List<Widget> _pages = [
     ExpenseTrackerPage(),
     BudgetPage(),
-    WalletPage(),
+    InvestmentPage(),
     AskPage(),
     SettingsPage(),
   ];
@@ -71,8 +71,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             label: 'Budget',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Wallet',
+            icon: Icon(Icons.trending_up),
+            label: 'Invest',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.question_answer),

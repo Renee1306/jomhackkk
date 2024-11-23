@@ -20,10 +20,11 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
       name: 'Renee Nyong',
       bankName: 'Maybank',
       accountNumber: 'XXX5787',
-      balance: 28901,
+      balance: 1100,
       income: 50000,
       expense: 20100,
-      color: const Color(0xFF1E2B47), // Maybank dark blue
+      color: const Color(0xFF1E2B47),
+      minimumBalance: 1000,
       transactions: [
         Transaction(
           title: 'Salary',
@@ -62,8 +63,9 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
       accountNumber: 'XXX8823',
       balance: 450.60,
       income: 500,
-      expense: 49.40,
-      color: const Color(0xFF1E88E5), // TnG blue
+      expense: 2000.40,
+      color: const Color(0xFF1E88E5),
+      minimumBalance: 50.00,
       transactions: [
         Transaction(
           title: 'Tealive',
@@ -100,10 +102,11 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
       name: 'Renee Nyong',
       bankName: 'CIMB Credit Card',
       accountNumber: 'XXXX XXXX XXXX 3344',
-      balance: -2150.80,  // Negative balance for credit card
+      balance: -2150.80,
       income: 0,
       expense: 2150.80,
-      color: const Color(0xFFD31145),  // CIMB red
+      color: const Color(0xFFD31145),
+      creditLimit: 2500.00,
       transactions: [
         Transaction(
           title: 'Uniqlo',
@@ -133,10 +136,11 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
       name: 'Renee Nyong',
       bankName: 'GrabPay',
       accountNumber: 'XXX9977',
-      balance: 125.30,
+      balance: 25.30,
       income: 200,
-      expense: 74.70,
-      color: const Color(0xFF00B14F),  // Grab green
+      expense: 174.70,
+      color: const Color(0xFF00B14F),
+      creditLimit: 200.00,
       transactions: [
         Transaction(
           title: 'GrabFood - McD',
@@ -199,7 +203,7 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
         children: [
           const SizedBox(height: 20),
           SizedBox(
-            height: 180,
+            height: 250,
             child: PageView(
               controller: _pageController,
               onPageChanged: (index) {
@@ -295,86 +299,103 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
   Widget _buildBankCard(BankCard card) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(24),
+      height: 250,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            card.color,
-            card.color.withOpacity(0.8),
-          ],
-        ),
+        color: card.color,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: card.color.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       card.bankName,
                       style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
-                      _isAmountVisible 
-                          ? 'RM ${card.balance.toStringAsFixed(2)}'
-                          : 'RM ××××.××',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
+                      card.accountNumber,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isAmountVisible = !_isAmountVisible;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _isAmountVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.white,
-                      size: 20,
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isAmountVisible = !_isAmountVisible;
+                  });
+                },
+                child: Icon(
+                  _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            'Balance',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _isAmountVisible ? 'RM ${card.balance.toStringAsFixed(2)}' : 'RM ****',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          if (card.alert != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.amber,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      card.alert!,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 12,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              'Account ${card.accountNumber}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
+                ],
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -648,6 +669,8 @@ class BankCard {
   final double expense;
   final Color color;
   final List<Transaction> transactions;
+  final double? creditLimit;  // Add credit limit field
+  final double? minimumBalance;  // Add minimum balance field
 
   BankCard({
     required this.name,
@@ -658,7 +681,25 @@ class BankCard {
     required this.expense,
     required this.color,
     required this.transactions,
+    this.creditLimit,
+    this.minimumBalance,
   });
+
+  String? get alert {
+    if (creditLimit != null) {
+      double usagePercentage = (expense / creditLimit!) * 100;
+      if (usagePercentage >= 80) {
+        return "You've reached ${usagePercentage.toStringAsFixed(0)}% of your credit limit";
+      }
+    }
+    if (bankName.contains('Touch n Go') || bankName.contains('GrabPay')) {
+      double spendingPercentage = (expense / (balance + expense)) * 100;
+      if (spendingPercentage >= 80) {
+        return "You've spent ${spendingPercentage.toStringAsFixed(0)}% of your loaded amount";
+      }
+    }
+    return null;
+  }
 }
 
 class Transaction {
