@@ -240,11 +240,13 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
     final bills = cardType.isEmpty ? _billPayments : _getBillsForCard(cardType);
     if (bills.isEmpty) return const SizedBox.shrink();
 
+    double totalMonthlyBills = bills.fold(0.0, (sum, bill) => sum + bill.amount);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -253,30 +255,31 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E1E1E),
                 ),
               ),
               Text(
-                'RM ${bills.fold(0.0, (sum, bill) => sum + bill.amount).toStringAsFixed(2)}/month',
+                'RM ${totalMonthlyBills.toStringAsFixed(2)}/month',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
               ),
             ],
           ),
         ),
         SizedBox(
-          height: 130,
+          height: 130, // Increased height
           child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
             itemCount: bills.length,
             itemBuilder: (context, index) {
               final bill = bills[index];
               return Container(
-                width: 150,
-                margin: EdgeInsets.only(
-                  right: index != bills.length - 1 ? 12 : 0,
-                ),
+                width: 150, // Increased width
+                margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -384,56 +387,50 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Padding(
-          padding: EdgeInsets.only(left: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Expenses',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E1E1E),
-                ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Expenses',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E1E1E),
               ),
-              Text(
-                'June 2024',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF666666),
-                ),
+            ),
+            Text(
+              'June 2024',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF666666),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         leading: IconButton(
-          padding: const EdgeInsets.only(left: 16), // Align back button
           icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF1E1E1E)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20), // Increased padding
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
               const SizedBox(height: 20),
-              // Bank Cards PageView
               SizedBox(
                 height: 250,
-                child: PageView.builder(
+                child: PageView(
                   controller: _pageController,
-                  itemCount: _cards.length + 1,
                   onPageChanged: (index) {
                     setState(() {
                       _currentCardIndex = index;
                     });
                   },
-                  itemBuilder: (context, index) {
-                    if (index == 0) return _buildTotalCard();
-                    return _buildBankCard(_cards[index - 1]);
-                  },
+                  children: [
+                    _buildTotalCard(),
+                    ..._cards.map((card) => _buildBankCard(card)),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
