@@ -41,7 +41,7 @@ class _AskPageState extends State<AskPage> {
             isUser: false,
           ));
           _messages.add(ChatMessage(
-            text: "potential savings\nmonthly: \RM350\nyearly: \RM2223",
+            text: "Potential savings\nmonthly: \RM350\nyearly: \RM2223",
             isUser: false,
             isHighlighted: true,
           ));

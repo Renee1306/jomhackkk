@@ -11,6 +11,7 @@ class ExpenseTrackerPage extends StatefulWidget {
 class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
   int _currentCardIndex = 0;
   final PageController _pageController = PageController();
+  bool _isAmountVisible = true;
 
   // Sample card data
   final List<BankCard> _cards = [
@@ -90,6 +91,72 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
           amount: 21.50,
           date: DateTime(2023, 6, 9, 18, 45),
           icon: Icons.toll,
+          type: TransactionType.expense,
+        ),
+      ],
+    ),
+    // CIMB Credit Card
+    BankCard(
+      name: 'Renee Nyong',
+      bankName: 'CIMB Credit Card',
+      accountNumber: 'XXXX XXXX XXXX 3344',
+      balance: -2150.80,  // Negative balance for credit card
+      income: 0,
+      expense: 2150.80,
+      color: const Color(0xFFD31145),  // CIMB red
+      transactions: [
+        Transaction(
+          title: 'Uniqlo',
+          amount: 299.90,
+          date: DateTime(2023, 6, 11, 15, 20),
+          icon: Icons.shopping_bag,
+          type: TransactionType.expense,
+        ),
+        Transaction(
+          title: 'Watson',
+          amount: 150.90,
+          date: DateTime(2023, 6, 10, 14, 30),
+          icon: Icons.local_pharmacy,
+          type: TransactionType.expense,
+        ),
+        Transaction(
+          title: 'Shopee',
+          amount: 1700.00,
+          date: DateTime(2023, 6, 8, 21, 15),
+          icon: Icons.shopping_cart,
+          type: TransactionType.expense,
+        ),
+      ],
+    ),
+    // GrabPay Wallet
+    BankCard(
+      name: 'Renee Nyong',
+      bankName: 'GrabPay',
+      accountNumber: 'XXX9977',
+      balance: 125.30,
+      income: 200,
+      expense: 74.70,
+      color: const Color(0xFF00B14F),  // Grab green
+      transactions: [
+        Transaction(
+          title: 'GrabFood - McD',
+          amount: 25.90,
+          date: DateTime(2023, 6, 11, 19, 30),
+          icon: Icons.fastfood,
+          type: TransactionType.expense,
+        ),
+        Transaction(
+          title: 'Top Up',
+          amount: 200,
+          date: DateTime(2023, 6, 9, 10, 00),
+          icon: Icons.account_balance_wallet,
+          type: TransactionType.income,
+        ),
+        Transaction(
+          title: 'GrabCar',
+          amount: 48.80,
+          date: DateTime(2023, 6, 8, 09, 15),
+          icon: Icons.local_taxi,
           type: TransactionType.expense,
         ),
       ],
@@ -266,7 +333,9 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'RM ${card.balance.toStringAsFixed(2)}',
+                      _isAmountVisible 
+                          ? 'RM ${card.balance.toStringAsFixed(2)}'
+                          : 'RM ××××.××',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -275,16 +344,23 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.remove_red_eye,
-                    color: Colors.white,
-                    size: 20,
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isAmountVisible = !_isAmountVisible;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -344,23 +420,6 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'RM ${totalBalance.toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-            const Text(
-              'Total Balance',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-            const Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -368,35 +427,61 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Income: RM ${totalIncome.toStringAsFixed(2)}',
+                      _isAmountVisible 
+                          ? 'RM ${totalBalance.toStringAsFixed(2)}'
+                          : 'RM ××××.××',
                       style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Expense: RM ${totalExpense.toStringAsFixed(2)}',
-                      style: const TextStyle(
+                    const Text(
+                      'Total Balance',
+                      style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 14,
+                        fontSize: 16,
                       ),
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.copy,
-                    color: Colors.white,
-                    size: 20,
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isAmountVisible = !_isAmountVisible;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
+            ),
+            const Spacer(),
+            Text(
+              'Income: RM ${totalIncome.toStringAsFixed(2)}',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Expense: RM ${totalExpense.toStringAsFixed(2)}',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
