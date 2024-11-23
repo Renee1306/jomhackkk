@@ -240,13 +240,11 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
     final bills = cardType.isEmpty ? _billPayments : _getBillsForCard(cardType);
     if (bills.isEmpty) return const SizedBox.shrink();
 
-    double totalMonthlyBills = bills.fold(0.0, (sum, bill) => sum + bill.amount);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -255,31 +253,30 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E1E1E),
                 ),
               ),
               Text(
-                'RM ${totalMonthlyBills.toStringAsFixed(2)}/month',
+                'RM ${bills.fold(0.0, (sum, bill) => sum + bill.amount).toStringAsFixed(2)}/month',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
                 ),
               ),
             ],
           ),
         ),
         SizedBox(
-          height: 130, // Increased height
+          height: 130,
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
             itemCount: bills.length,
             itemBuilder: (context, index) {
               final bill = bills[index];
               return Container(
-                width: 150, // Increased width
-                margin: const EdgeInsets.only(right: 12),
+                width: 150,
+                margin: EdgeInsets.only(
+                  right: index != bills.length - 1 ? 12 : 0,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -387,122 +384,127 @@ class _ExpenseTrackerPageState extends State<ExpenseTrackerPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Expenses',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E1E1E),
+        title: const Padding(
+          padding: EdgeInsets.only(left: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Expenses',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E1E1E),
+                ),
               ),
-            ),
-            Text(
-              'June 2024',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF666666),
+              Text(
+                'June 2024',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF666666),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         leading: IconButton(
+          padding: const EdgeInsets.only(left: 16), // Align back button
           icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF1E1E1E)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 250,
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentCardIndex = index;
-                  });
-                },
-                children: [
-                  _buildTotalCard(),
-                  ..._cards.map((card) => _buildBankCard(card)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _cards.length + 1,
-                (index) => _buildDotIndicator(index),
-              ),
-            ),
-            _buildIncomeExpenseRow(),
-            _currentCardIndex == 0
-                ? _buildUpcomingBills('')
-                : _buildUpcomingBills(_cards[_currentCardIndex - 1].bankName),
-            Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.2),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20), // Increased padding
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              // Bank Cards PageView
+              SizedBox(
+                height: 250,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: _cards.length + 1,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentCardIndex = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    if (index == 0) return _buildTotalCard();
+                    return _buildBankCard(_cards[index - 1]);
+                  },
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  _cards.length + 1,
+                  (index) => _buildDotIndicator(index),
+                ),
+              ),
+              _buildIncomeExpenseRow(),
+              _currentCardIndex == 0
+                  ? _buildUpcomingBills('')
+                  : _buildUpcomingBills(_cards[_currentCardIndex - 1].bankName),
+
+              // Recent Transactions heading outside the container
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
                       'Recent Transactions',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1E1E1E),
                       ),
                     ),
-                  ),
-                  Container(
-                    height: 620, // Adjust this height as needed
-                    child: ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
-                      itemCount: _getAllTransactions().length,
-                      itemBuilder: (context, index) {
-                        final transaction = _getAllTransactions()[index];
-                        return Column(
-                          children: [
-                            _buildTransactionItem(transaction),
-                            if (index < _getAllTransactions().length - 1)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Divider(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  height: 1,
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+
+              // Transactions container
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.2),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListView.separated(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _getAllTransactions().length,
+                  separatorBuilder: (context, index) => Divider(
+                    color: Colors.grey.withOpacity(0.2),
+                    height: 1,
+                    indent: 16,
+                    endIndent: 16,
+                  ),
+                  itemBuilder: (context, index) {
+                    return _buildTransactionItem(_getAllTransactions()[index]);
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
